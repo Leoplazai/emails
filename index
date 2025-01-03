@@ -123,21 +123,28 @@ const EmailGenerator = () => {
     return followUps;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (formData.sampleEmail) {
-      setSampleAnalysis(analyzeSampleEmail(formData.sampleEmail));
-    }
-    
-    const primaryEmail = generatePrimaryEmail(formData, sampleAnalysis);
-    setGeneratedEmail(primaryEmail);
-    
-    if (parseInt(formData.followUpCount) > 0) {
-      const followUps = generateFollowUps(formData);
-      setGeneratedFollowUps(followUps);
-    }
+const handleSubmit = (e) => {
+  e.preventDefault();
+  console.log("Form submitted"); // Debug log
+  
+  // Generate test email first
+  const testEmail = {
+    subject: `Test Subject for ${formData.industry}`,
+    body: `This is a test email body.\nIt uses data from the form: ${formData.valueProposition}`
   };
+  
+  setGeneratedEmail(testEmail);
+  
+  // Generate test follow-ups
+  if (parseInt(formData.followUpCount) > 0) {
+    const testFollowUps = [{
+      subject: "Test Follow-up 1",
+      body: "This is a test follow-up email",
+      timing: "2-3 days after initial email"
+    }];
+    setGeneratedFollowUps(testFollowUps);
+  }
+};
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
