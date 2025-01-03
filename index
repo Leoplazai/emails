@@ -1,0 +1,319 @@
+import React, { useState } from 'react';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const EmailGenerator = () => {
+  // State and helper functions from previous code...
+  const [formData, setFormData] = useState({
+    ageRange: '',
+    location: '',
+    industry: '',
+    productService: '',
+    valueProposition: '',
+    painPoints: '',
+    marketAlternatives: '',
+    successMetrics: '',
+    phoneNumber: '',
+    sampleEmail: '',
+    followUpCount: '0',
+    useGreeting: false,
+    maxLines: '7',
+    professionalismLevel: '5',
+    lineReduction: '1'
+  });
+
+  const [generatedEmail, setGeneratedEmail] = useState(null);
+  const [generatedFollowUps, setGeneratedFollowUps] = useState([]);
+  const [sampleAnalysis, setSampleAnalysis] = useState(null);
+
+  // Handlers from previous code...
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSwitchChange = (checked) => {
+    setFormData(prev => ({ ...prev, useGreeting: checked }));
+  };
+
+  const handleSelectChange = (name, value) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const analyzeSampleEmail = (sampleEmail) => {
+    if (!sampleEmail) return null;
+    // Analysis logic here...
+    return {
+      hooks: [],
+      painPoints: [],
+      valueProps: [],
+      toneLevel: 5
+    };
+  };
+
+  const generatePrimaryEmail = (data, analysis) => {
+    const painPoints = data.painPoints.split(',').map(p => p.trim());
+    const profLevel = parseInt(data.professionalismLevel);
+    
+    const emailLines = [
+      `${data.useGreeting ? `Hi {{firstName}},\n\n` : ''}Tired of ${painPoints[0]} in your ${data.industry}?`,
+      `Every delay costs you $1,000+ in lost productivity`,
+      `Imagine achieving ${data.valueProposition} without compromises`,
+      `Leading ${data.industry} companies in ${data.location} trust us with their projects`,
+      `${data.successMetrics}`,
+      `Your reputation is too valuable to risk with unreliable services`,
+      `Ready for a conversation? Call ${data.phoneNumber} (available now)`
+    ];
+
+    return {
+      subject: `Achieve ${data.valueProposition} in Your ${data.industry}`,
+      body: emailLines.slice(0, parseInt(data.maxLines)).join('\n')
+    };
+  };
+
+  const generateFollowUps = (data) => {
+    const followUps = [];
+    const maxLines = parseInt(data.maxLines);
+    const reduction = parseInt(data.lineReduction);
+
+    // Follow-up templates with progressive shortening
+    const templates = [
+      {
+        subject: "Quick Follow-up",
+        lines: [
+          `${data.useGreeting ? `Hi {{firstName}},\n\n` : ''}Still considering solutions for your ${data.industry}?`,
+          `Leading companies achieved ${data.valueProposition} last month`,
+          `Ready for a quick chat? Call ${data.phoneNumber}`,
+        ]
+      },
+      {
+        subject: "Checking In",
+        lines: [
+          `${data.useGreeting ? `Hi {{firstName}},\n\n` : ''}Your competitors are saving time and money`,
+          `Want to see how? Call ${data.phoneNumber}`,
+        ]
+      },
+      {
+        subject: "Final Note",
+        lines: [
+          `${data.useGreeting ? `Hi {{firstName}},\n\n` : ''}Just keeping our number handy: ${data.phoneNumber}`,
+          `Here when you need that competitive edge`,
+        ]
+      }
+    ];
+
+    // Generate follow-ups with reducing length
+    for (let i = 0; i < parseInt(data.followUpCount); i++) {
+      const template = templates[i];
+      if (template) {
+        followUps.push({
+          subject: template.subject,
+          body: template.lines.slice(0, maxLines - (reduction * i)).join('\n'),
+          timing: `${(i + 1) * 3} days after initial email`
+        });
+      }
+    }
+
+    return followUps;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (formData.sampleEmail) {
+      setSampleAnalysis(analyzeSampleEmail(formData.sampleEmail));
+    }
+    
+    const primaryEmail = generatePrimaryEmail(formData, sampleAnalysis);
+    setGeneratedEmail(primaryEmail);
+    
+    if (parseInt(formData.followUpCount) > 0) {
+      const followUps = generateFollowUps(formData);
+      setGeneratedFollowUps(followUps);
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-4 max-w-4xl">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Email Preferences Card */}
+        <Card>
+          <CardHeader className="text-xl font-bold">Email Preferences</CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center space-x-4">
+              <Label>Use "Hi {'{firstName}'}," Greeting</Label>
+              <Switch 
+                checked={formData.useGreeting}
+                onCheckedChange={handleSwitchChange}
+              />
+            </div>
+            
+            <div>
+              <Label>Number of Follow-up Emails</Label>
+              <Select 
+                value={formData.followUpCount}
+                onValueChange={(value) => handleSelectChange('followUpCount', value)}
+              >
+                <SelectTrigger className="w-full mt-2">
+                  <SelectValue placeholder="Select follow-up count" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[0,2,3,4,5].map(num => (
+                    <SelectItem key={num} value={num.toString()}>
+                      {num === 0 ? 'No follow-ups' : `${num} follow-ups`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Maximum Lines per Email</Label>
+              <Select 
+                value={formData.maxLines}
+                onValueChange={(value) => handleSelectChange('maxLines', value)}
+              >
+                <SelectTrigger className="w-full mt-2">
+                  <SelectValue placeholder="Select maximum lines" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[4,5,6,7,8,9,10].map(num => (
+                    <SelectItem key={num} value={num.toString()}>{num} lines</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Line Reduction per Follow-up</Label>
+              <Select 
+                value={formData.lineReduction}
+                onValueChange={(value) => handleSelectChange('lineReduction', value)}
+              >
+                <SelectTrigger className="w-full mt-2">
+                  <SelectValue placeholder="Select line reduction" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1,2,3].map(num => (
+                    <SelectItem key={num} value={num.toString()}>{num} line(s) shorter</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Professionalism Level</Label>
+              <Slider
+                defaultValue={[5]}
+                min={1}
+                max={10}
+                step={1}
+                onValueChange={(value) => handleSelectChange('professionalismLevel', value[0].toString())}
+                className="mt-2"
+              />
+              <div className="flex justify-between text-xs mt-1">
+                <span>Casual</span>
+                <span>Professional</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Core Specifications Card */}
+        <Card>
+          <CardHeader className="text-xl font-bold">Core Specifications</CardHeader>
+          <CardContent className="space-y-4">
+            {['ageRange', 'location', 'industry', 'productService'].map((field) => (
+              <div key={field}>
+                <Label className="block mb-2">{field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')} *</Label>
+                <Input
+                  required
+                  name={field}
+                  value={formData[field]}
+                  onChange={handleInputChange}
+                  placeholder={`e.g., ${field === 'ageRange' ? '30-50' : field === 'location' ? 'Australia' : field === 'industry' ? 'Construction' : 'Commercial Cleaning'}`}
+                />
+              </div>
+            ))}
+            
+            {['valueProposition', 'painPoints', 'successMetrics'].map((field) => (
+              <div key={field}>
+                <Label className="block mb-2">{field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')} *</Label>
+                <Textarea
+                  required
+                  name={field}
+                  value={formData[field]}
+                  onChange={handleInputChange}
+                  placeholder={`e.g., ${field === 'valueProposition' ? '48-hour faster completion' : field === 'painPoints' ? 'delays, costs, quality' : '100+ successful projects'}`}
+                  className="h-20"
+                />
+              </div>
+            ))}
+
+            <div>
+              <Label className="block mb-2">Phone Number/CTA *</Label>
+              <Input
+                required
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleInputChange}
+                placeholder="e.g., 1300 940 202"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Sample Email Card */}
+        <Card>
+          <CardHeader className="text-xl font-bold">Sample Email (Optional)</CardHeader>
+          <CardContent>
+            <Textarea
+              name="sampleEmail"
+              value={formData.sampleEmail}
+              onChange={handleInputChange}
+              placeholder="Paste your current email here to improve it..."
+              className="h-32"
+            />
+          </CardContent>
+        </Card>
+
+        <Button type="submit" className="w-full">Generate Optimized Email Sequence</Button>
+
+        {/* Generated Emails Display */}
+        {generatedEmail && (
+          <Card>
+            <CardHeader className="text-xl font-bold">Generated Initial Email</CardHeader>
+            <CardContent>
+              <div className="font-semibold mb-2">Subject: {generatedEmail.subject}</div>
+              <pre className="whitespace-pre-wrap font-mono text-sm">
+                {generatedEmail.body}
+              </pre>
+            </CardContent>
+          </Card>
+        )}
+
+        {generatedFollowUps.map((email, index) => (
+          <Card key={index}>
+            <CardHeader className="text-xl font-bold">
+              Follow-up Email {index + 1} ({email.timing})
+            </CardHeader>
+            <CardContent>
+              <div className="font-semibold mb-2">Subject: {email.subject}</div>
+              <pre className="whitespace-pre-wrap font-mono text-sm">
+                {email.body}
+              </pre>
+            </CardContent>
+          </Card>
+        ))}
+      </form>
+    </div>
+  );
+};
+
+export default EmailGenerator;
