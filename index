@@ -9,8 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const EmailGenerator = () => {
-  // State and helper functions from previous code...
-  const [formData, setFormData] = useState({
+  // Initial form state
+  const initialFormData = {
     ageRange: '',
     location: '',
     industry: '',
@@ -26,125 +26,70 @@ const EmailGenerator = () => {
     maxLines: '7',
     professionalismLevel: '5',
     lineReduction: '1'
-  });
+  };
 
+  // State hooks
+  const [formData, setFormData] = useState(initialFormData);
   const [generatedEmail, setGeneratedEmail] = useState(null);
   const [generatedFollowUps, setGeneratedFollowUps] = useState([]);
-  const [sampleAnalysis, setSampleAnalysis] = useState(null);
 
-  // Handlers from previous code...
+  // Event handlers
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    console.log("Input changed:", name, value); // Debug log
   };
 
   const handleSwitchChange = (checked) => {
     setFormData(prev => ({ ...prev, useGreeting: checked }));
+    console.log("Switch changed:", checked); // Debug log
   };
 
   const handleSelectChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+    console.log("Select changed:", name, value); // Debug log
   };
 
-  const analyzeSampleEmail = (sampleEmail) => {
-    if (!sampleEmail) return null;
-    // Analysis logic here...
-    return {
-      hooks: [],
-      painPoints: [],
-      valueProps: [],
-      toneLevel: 5
-    };
-  };
-
-  const generatePrimaryEmail = (data, analysis) => {
-    const painPoints = data.painPoints.split(',').map(p => p.trim());
-    const profLevel = parseInt(data.professionalismLevel);
+  // Form submission handler with test output
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Form submitted"); // Debug log
     
-    const emailLines = [
-      `${data.useGreeting ? `Hi {{firstName}},\n\n` : ''}Tired of ${painPoints[0]} in your ${data.industry}?`,
-      `Every delay costs you $1,000+ in lost productivity`,
-      `Imagine achieving ${data.valueProposition} without compromises`,
-      `Leading ${data.industry} companies in ${data.location} trust us with their projects`,
-      `${data.successMetrics}`,
-      `Your reputation is too valuable to risk with unreliable services`,
-      `Ready for a conversation? Call ${data.phoneNumber} (available now)`
-    ];
+    // Test initial email
+    const testEmail = {
+      subject: `Test: ${formData.valueProposition} for ${formData.industry}`,
+      body: `Hi ${formData.industry} Professional,
 
-    return {
-      subject: `Achieve ${data.valueProposition} in Your ${data.industry}`,
-      body: emailLines.slice(0, parseInt(data.maxLines)).join('\n')
+Tired of ${formData.painPoints} impacting your business?
+Every delay costs you time and money in ${formData.location}
+Imagine achieving ${formData.valueProposition} without hassle
+${formData.successMetrics}
+Ready to see how? Call ${formData.phoneNumber} (5-min chat)`
     };
-  };
-
-  const generateFollowUps = (data) => {
-    const followUps = [];
-    const maxLines = parseInt(data.maxLines);
-    const reduction = parseInt(data.lineReduction);
-
-    // Follow-up templates with progressive shortening
-    const templates = [
-      {
-        subject: "Quick Follow-up",
-        lines: [
-          `${data.useGreeting ? `Hi {{firstName}},\n\n` : ''}Still considering solutions for your ${data.industry}?`,
-          `Leading companies achieved ${data.valueProposition} last month`,
-          `Ready for a quick chat? Call ${data.phoneNumber}`,
-        ]
-      },
-      {
-        subject: "Checking In",
-        lines: [
-          `${data.useGreeting ? `Hi {{firstName}},\n\n` : ''}Your competitors are saving time and money`,
-          `Want to see how? Call ${data.phoneNumber}`,
-        ]
-      },
-      {
-        subject: "Final Note",
-        lines: [
-          `${data.useGreeting ? `Hi {{firstName}},\n\n` : ''}Just keeping our number handy: ${data.phoneNumber}`,
-          `Here when you need that competitive edge`,
-        ]
-      }
-    ];
-
-    // Generate follow-ups with reducing length
-    for (let i = 0; i < parseInt(data.followUpCount); i++) {
-      const template = templates[i];
-      if (template) {
-        followUps.push({
-          subject: template.subject,
-          body: template.lines.slice(0, maxLines - (reduction * i)).join('\n'),
+    
+    setGeneratedEmail(testEmail);
+    console.log("Test email generated:", testEmail); // Debug log
+    
+    // Generate test follow-ups if requested
+    if (parseInt(formData.followUpCount) > 0) {
+      const testFollowUps = [];
+      
+      // Create follow-ups based on count
+      for (let i = 0; i < parseInt(formData.followUpCount); i++) {
+        testFollowUps.push({
+          subject: `Follow-up ${i + 1}: ${formData.valueProposition}`,
+          body: `Test follow-up email #${i + 1}
+          
+Still interested in solving ${formData.painPoints}?
+Quick call to discuss: ${formData.phoneNumber}`,
           timing: `${(i + 1) * 3} days after initial email`
         });
       }
+      
+      setGeneratedFollowUps(testFollowUps);
+      console.log("Test follow-ups generated:", testFollowUps); // Debug log
     }
-
-    return followUps;
   };
-
-const handleSubmit = (e) => {
-  e.preventDefault();
-  console.log("Form submitted"); // Debug log
-  
-  // Generate test email first
-  const testEmail = {
-    subject: `Test Subject for ${formData.industry}`,
-    body: `This is a test email body.\nIt uses data from the form: ${formData.valueProposition}`
-  };
-  
-  setGeneratedEmail(testEmail);
-  
-  // Generate test follow-ups
-  if (parseInt(formData.followUpCount) > 0) {
-    const testFollowUps = [{
-      subject: "Test Follow-up 1",
-      body: "This is a test follow-up email",
-      timing: "2-3 days after initial email"
-    }];
-    setGeneratedFollowUps(testFollowUps);
-  }
-};
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
@@ -236,33 +181,49 @@ const handleSubmit = (e) => {
         <Card>
           <CardHeader className="text-xl font-bold">Core Specifications</CardHeader>
           <CardContent className="space-y-4">
+            {/* Required text inputs */}
             {['ageRange', 'location', 'industry', 'productService'].map((field) => (
               <div key={field}>
-                <Label className="block mb-2">{field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')} *</Label>
+                <Label className="block mb-2">
+                  {field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')} *
+                </Label>
                 <Input
                   required
                   name={field}
                   value={formData[field]}
                   onChange={handleInputChange}
-                  placeholder={`e.g., ${field === 'ageRange' ? '30-50' : field === 'location' ? 'Australia' : field === 'industry' ? 'Construction' : 'Commercial Cleaning'}`}
+                  placeholder={`e.g., ${
+                    field === 'ageRange' ? '30-50' :
+                    field === 'location' ? 'Australia' :
+                    field === 'industry' ? 'Construction' :
+                    'Commercial Cleaning'
+                  }`}
                 />
               </div>
             ))}
             
+            {/* Required textareas */}
             {['valueProposition', 'painPoints', 'successMetrics'].map((field) => (
               <div key={field}>
-                <Label className="block mb-2">{field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')} *</Label>
+                <Label className="block mb-2">
+                  {field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')} *
+                </Label>
                 <Textarea
                   required
                   name={field}
                   value={formData[field]}
                   onChange={handleInputChange}
-                  placeholder={`e.g., ${field === 'valueProposition' ? '48-hour faster completion' : field === 'painPoints' ? 'delays, costs, quality' : '100+ successful projects'}`}
+                  placeholder={`e.g., ${
+                    field === 'valueProposition' ? '48-hour faster completion' :
+                    field === 'painPoints' ? 'delays, costs, quality' :
+                    '100+ successful projects'
+                  }`}
                   className="h-20"
                 />
               </div>
             ))}
 
+            {/* Phone number input */}
             <div>
               <Label className="block mb-2">Phone Number/CTA *</Label>
               <Input
